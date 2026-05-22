@@ -1,0 +1,1649 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QA Performance Monitoring System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #8B1538 0%, #6B1028 100%);
+            color: white;
+            padding: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.9);
+            color: #8B1538;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-logout:hover {
+            background: white;
+            transform: translateY(-2px);
+        }
+
+        /* Navigation */
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #6c757d;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .nav-tab:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .nav-tab.active {
+            color: #8B1538;
+            border-bottom: 3px solid #8B1538;
+            background: white;
+        }
+
+        /* Content */
+        .content {
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .section-title {
+            font-size: 24px;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #8B1538;
+        }
+
+        /* Dashboard */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 15px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h3 {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        /* Agents list */
+        .agents-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #8B1538;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            background: #6B1028;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(139, 21, 56, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+            margin-left: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .agents-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .agents-table thead {
+            background: #f8f9fa;
+        }
+
+        .agents-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #495057;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .agents-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .agents-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .btn-select {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-select:hover {
+            background: #218838;
+        }
+
+        /* Evaluation Form */
+        .evaluation-header {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .evaluation-header h3 {
+            color: #8B1538;
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .evaluation-header p {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Previous results comparison */
+        .previous-results {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .previous-results h4 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .comparison-options {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .comparison-select {
+            flex: 1;
+            min-width: 250px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .previous-score-display {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            display: none;
+        }
+
+        .score-comparison {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .score-item {
+            text-align: center;
+        }
+
+        .score-item .label {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+
+        .score-item .value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .score-delta {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .score-delta.positive {
+            color: #28a745;
+        }
+
+        .score-delta.negative {
+            color: #dc3545;
+        }
+
+        /* Category scoring */
+        .category-section {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            transition: all 0.3s;
+        }
+
+        .category-section:hover {
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .category-title {
+            font-size: 20px;
+            color: #8B1538;
+            font-weight: 600;
+        }
+
+        .category-score {
+            background: #f8f9fa;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .criterion {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .criterion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .criterion-text {
+            flex: 1;
+            color: #2d3748;
+            font-size: 15px;
+            line-height: 1.5;
+        }
+
+        .criterion-weight {
+            color: #6c757d;
+            font-size: 13px;
+            margin-left: 15px;
+            white-space: nowrap;
+        }
+
+        .rating-buttons {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .rating-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 10px;
+            border: 2px solid #dee2e6;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .rating-btn:hover {
+            border-color: #8B1538;
+            background: #fff5f7;
+        }
+
+        .rating-btn.selected {
+            background: #8B1538;
+            color: white;
+            border-color: #8B1538;
+        }
+
+        .rating-btn.na {
+            background: #6c757d;
+            color: white;
+            border-color: #6c757d;
+        }
+
+        .rating-btn.na:hover {
+            background: #5a6268;
+        }
+
+        .criterion-score {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 14px;
+            color: #6c757d;
+        }
+
+        /* Total Score */
+        .total-score-section {
+            background: linear-gradient(135deg, #8B1538 0%, #6B1028 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .total-score-section h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .total-score-value {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: center;
+        }
+
+        /* Login Screen */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .login-box h1 {
+            color: #8B1538;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #495057;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #8B1538;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: #8B1538;
+        }
+
+        .btn-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #6c757d;
+        }
+
+        /* Settings */
+        .settings-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .settings-section h4 {
+            color: #495057;
+            margin-bottom: 15px;
+        }
+
+        .criteria-list {
+            list-style: none;
+        }
+
+        .criteria-list li {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .criteria-list li input {
+            width: 80px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .agents-table {
+                font-size: 14px;
+            }
+            
+            .rating-buttons {
+                flex-direction: column;
+            }
+            
+            .rating-btn {
+                min-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container">
+        <div class="login-box">
+            <h1>📊 QA Performance<br>Monitoring System</h1>
+            
+            <div class="error-message" id="loginError">
+                Invalid email or password
+            </div>
+            
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required placeholder="your.email@company.com">
+                </div>
+                
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                
+                <button type="submit" class="btn-primary" style="width: 100%">
+                    Login
+                </button>
+            </form>
+            
+            <p style="text-align: center; margin-top: 20px; color: #6c757d; font-size: 14px;">
+                Forgot password? <a href="#" onclick="alert('Contact admin to reset password')" style="color: #8B1538;">Contact Admin</a>
+            </p>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="container" style="display: none;">
+        <!-- Header -->
+        <div class="header">
+            <h1>📊 QA Performance Monitoring</h1>
+            <div class="user-info">
+                <div class="user-badge" id="userBadge">User</div>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="nav-tabs" id="mainNavTabs">
+            <button class="nav-tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+            <button class="nav-tab" onclick="showTab('agents')">👥 My Agents</button>
+            <button class="nav-tab" onclick="showTab('evaluate')">⭐ Evaluate</button>
+            <button class="nav-tab" onclick="showTab('history')">📋 History</button>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <!-- Dashboard Tab -->
+            <div id="dashboardTab" class="tab-content active">
+                <h2 class="section-title">Dashboard</h2>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Total Agents</h3>
+                        <div class="stat-value" id="totalAgents">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Total Evaluations</h3>
+                        <div class="stat-value" id="totalEvaluations">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Average Score</h3>
+                        <div class="stat-value" id="averageScore">0%</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>This Month</h3>
+                        <div class="stat-value" id="thisMonthEvals">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agents Tab -->
+            <div id="agentsTab" class="tab-content">
+                <h2 class="section-title">My Agents</h2>
+                
+                <div class="agents-header">
+                    <div>
+                        <button class="btn-primary" onclick="showAddAgentModal()">+ Add Agent</button>
+                        <button class="btn-secondary" onclick="importFromWorkload()">📥 Import from Work load</button>
+                    </div>
+                </div>
+                
+                <table class="agents-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Position</th>
+                            <th>Email</th>
+                            <th>Agent Name</th>
+                            <th>Added</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #6c757d;">No agents added yet</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Evaluate Tab -->
+            <div id="evaluateTab" class="tab-content">
+                <h2 class="section-title">Evaluate Performance</h2>
+                
+                <div class="evaluation-header" id="evaluationHeader" style="display: none;">
+                    <h3 id="selectedAgentName">Please select an agent</h3>
+                    <p id="selectedAgentInfo"></p>
+                </div>
+
+                <div id="noAgentWarning" style="background: #fff3cd; padding: 20px; border-radius: 10px; text-align: center; color: #856404;">
+                    ⚠️ Please select an agent from "My Agents" section before starting evaluation
+                </div>
+
+                <!-- Previous Results Comparison -->
+                <div id="previousResultsSection" class="previous-results" style="display: none;">
+                    <h4>📊 Compare with Previous Results</h4>
+                    <div class="comparison-options">
+                        <select id="previousEvalSelect" class="comparison-select" onchange="loadPreviousScore()">
+                            <option value="">Select previous evaluation...</option>
+                        </select>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <input type="number" id="manualPreviousScore" class="comparison-select" placeholder="Or enter score manually (%)" min="0" max="100" step="0.1" style="flex: none; width: 200px;">
+                            <button class="btn-secondary" onclick="setManualPreviousScore()">Set</button>
+                        </div>
+                    </div>
+                    <div id="previousScoreDisplay" class="previous-score-display">
+                        <div class="score-comparison">
+                            <div class="score-item">
+                                <div class="label">Previous</div>
+                                <div class="value" id="previousScoreValue">0%</div>
+                            </div>
+                            <div class="score-delta" id="scoreDelta">→</div>
+                            <div class="score-item">
+                                <div class="label">Current</div>
+                                <div class="value" id="currentScoreValue">0%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Evaluation Form -->
+                <div id="evaluationForm" style="display: none;">
+                    <!-- Call Intro -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">📞 Call Introduction</div>
+                            <div class="category-score" id="categoryScore_intro">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher greet the broker/driver professionally and clearly state the purpose of the call?</div>
+                                <div class="criterion-weight">Weight: 100%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('intro_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('intro_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('intro_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('intro_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('intro_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('intro_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_intro_1">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Negotiation with Driver -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">🚛 Negotiation with Driver</div>
+                            <div class="category-score" id="categoryScore_driver">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher provide clear and accurate details about the load (pickup/delivery times, locations, cargo specifics)?</div>
+                                <div class="criterion-weight">Weight: 50%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('driver_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('driver_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('driver_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('driver_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('driver_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('driver_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_driver_1">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher address driver questions or concerns effectively and build rapport?</div>
+                                <div class="criterion-weight">Weight: 50%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('driver_2', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('driver_2', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('driver_2', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('driver_2', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('driver_2', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('driver_2', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_driver_2">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Negotiation with Broker -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">💼 Negotiation with Broker</div>
+                            <div class="category-score" id="categoryScore_broker">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher verify and clarify key load details by asking the right questions?</div>
+                                <div class="criterion-weight">Weight: 25%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('broker_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('broker_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('broker_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('broker_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('broker_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('broker_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_broker_1">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher explain their rate confidently using operational and market factors?</div>
+                                <div class="criterion-weight">Weight: 25%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('broker_2', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('broker_2', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('broker_2', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('broker_2', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('broker_2', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('broker_2', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_broker_2">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher stay persistent after the first "no" and push the broker with additional arguments?</div>
+                                <div class="criterion-weight">Weight: 17%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('broker_3', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('broker_3', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('broker_3', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('broker_3', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('broker_3', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('broker_3', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_broker_3">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher work with common BROKERS' objections?</div>
+                                <div class="criterion-weight">Weight: 25%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('broker_4', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('broker_4', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('broker_4', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('broker_4', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('broker_4', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('broker_4', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_broker_4">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher share contacts and equipment options to leave a positive impression and promote future cooperation?</div>
+                                <div class="criterion-weight">Weight: 8%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('broker_5', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('broker_5', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('broker_5', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('broker_5', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('broker_5', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('broker_5', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_broker_5">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Overall Impression -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">⭐ Overall Impression</div>
+                            <div class="category-score" id="categoryScore_overall">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Communication clarity and professionalism</div>
+                                <div class="criterion-weight">Weight: 33%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('overall_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('overall_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('overall_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('overall_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('overall_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('overall_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_overall_1">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Problem-solving and adaptability</div>
+                                <div class="criterion-weight">Weight: 67%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('overall_2', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('overall_2', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('overall_2', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('overall_2', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('overall_2', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('overall_2', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_overall_2">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Call Closure -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">✅ Call Closure</div>
+                            <div class="category-score" id="categoryScore_closure">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher summarize next steps and confirm mutual understanding?</div>
+                                <div class="criterion-weight">Weight: 62%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('closure_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('closure_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('closure_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('closure_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('closure_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('closure_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_closure_1">0.0%</span></div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher end the call courteously and leave a positive final impression?</div>
+                                <div class="criterion-weight">Weight: 38%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('closure_2', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('closure_2', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('closure_2', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('closure_2', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('closure_2', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('closure_2', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_closure_2">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Extras -->
+                    <div class="category-section">
+                        <div class="category-header">
+                            <div class="category-title">⚡ Extras</div>
+                            <div class="category-score" id="categoryScore_extras">0%</div>
+                        </div>
+                        <div class="criterion">
+                            <div class="criterion-header">
+                                <div class="criterion-text">Did the dispatcher demonstrate exceptional effort, creativity, or exceed expectations?</div>
+                                <div class="criterion-weight">Weight: 100%</div>
+                            </div>
+                            <div class="rating-buttons">
+                                <button class="rating-btn" onclick="setRating('extras_1', 1)">1</button>
+                                <button class="rating-btn" onclick="setRating('extras_1', 2)">2</button>
+                                <button class="rating-btn" onclick="setRating('extras_1', 3)">3</button>
+                                <button class="rating-btn" onclick="setRating('extras_1', 4)">4</button>
+                                <button class="rating-btn" onclick="setRating('extras_1', 5)">5</button>
+                                <button class="rating-btn na" onclick="setRating('extras_1', 'NA')">N/A</button>
+                            </div>
+                            <div class="criterion-score">Score: <span id="score_extras_1">0.0%</span></div>
+                        </div>
+                    </div>
+
+                    <!-- Total Score -->
+                    <div class="total-score-section">
+                        <h3>TOTAL PERFORMANCE SCORE</h3>
+                        <div class="total-score-value" id="totalScore">0.0%</div>
+                    </div>
+
+                    <!-- Comments -->
+                    <div style="margin-top: 30px;">
+                        <h3 style="color: #495057; margin-bottom: 15px;">📝 Comments & Notes</h3>
+                        <textarea id="evaluationComments" rows="5" style="width: 100%; padding: 15px; border: 2px solid #dee2e6; border-radius: 10px; font-size: 14px; font-family: inherit;" placeholder="Add any additional comments or observations..."></textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button class="btn-secondary" onclick="resetEvaluation()">🔄 Reset</button>
+                        <button class="btn-primary" onclick="saveEvaluation()">💾 Save Evaluation</button>
+                        <button class="btn-primary" onclick="generatePDF()">📄 Generate PDF Report</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="historyTab" class="tab-content">
+                <h2 class="section-title">Evaluation History</h2>
+                <div id="historyContent">
+                    <p style="text-align: center; color: #6c757d; padding: 40px;">No evaluations yet</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Agent Modal -->
+    <div id="addAgentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Agent</h3>
+                <button class="btn-close" onclick="closeModal('addAgentModal')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Name</label>
+                <input type="text" id="newAgentName" placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label>Position</label>
+                <input type="text" id="newAgentPosition" placeholder="Dispatcher / Account Manager / etc.">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="newAgentEmail" placeholder="john@company.com">
+            </div>
+            <div class="form-group">
+                <label>Agent Name (optional)</label>
+                <input type="text" id="newAgentAgentName" placeholder="Agent identifier">
+            </div>
+            <button class="btn-primary" onclick="saveNewAgent()">Add Agent</button>
+        </div>
+    </div>
+
+    <script>
+        // ============= CONFIGURATION =============
+        const CONFIG = {
+            GOOGLE_SHEETS_URL: 'https://script.google.com/macros/s/AKfycbyVrvto5u094wH-Vn8kqjTOlxNYtyWIQ8IYTryap8IsyitEFN487EMs-paJhc0y501W/exec',
+            USE_MOCK_DATA: true // Set to false when connected to Google Sheets
+        };
+
+        // ============= SCORING CONFIGURATION =============
+        const categories = {
+            intro: {
+                name: 'Call Introduction',
+                criteria: ['intro_1']
+            },
+            driver: {
+                name: 'Negotiation with Driver',
+                criteria: ['driver_1', 'driver_2']
+            },
+            broker: {
+                name: 'Negotiation with Broker',
+                criteria: ['broker_1', 'broker_2', 'broker_3', 'broker_4', 'broker_5']
+            },
+            overall: {
+                name: 'Overall Impression',
+                criteria: ['overall_1', 'overall_2']
+            },
+            closure: {
+                name: 'Call Closure',
+                criteria: ['closure_1', 'closure_2']
+            },
+            extras: {
+                name: 'Extras',
+                criteria: ['extras_1']
+            }
+        };
+
+        const weights = {
+            // Call intro
+            intro_1: 100,
+            
+            // Driver negotiation
+            driver_1: 50,
+            driver_2: 50,
+            
+            // Broker negotiation
+            broker_1: 25,
+            broker_2: 25,
+            broker_3: 17,
+            broker_4: 25,
+            broker_5: 8,
+            
+            // Overall impression
+            overall_1: 33,
+            overall_2: 67,
+            
+            // Call closure
+            closure_1: 62,
+            closure_2: 38,
+            
+            // Extras
+            extras_1: 100
+        };
+
+        // ============= STATE =============
+        let currentUser = null;
+        let currentAgent = null;
+        let ratings = {};
+        let agents = [];
+        let evaluations = [];
+        let previousScore = null;
+
+        // ============= MOCK DATA =============
+        let users = [];
+
+        function initMockData() {
+            users = [
+                { email: 'alina@rpmdispatch.com', name: 'Alina H.', role: 'admin', password: 'admin123' },
+                { email: 'i.buneev@qlab-university.com', name: 'Ivan B.', role: 'evaluator', password: 'ivan123' },
+                { email: 'kate.ef@rpmdispatch.com', name: 'Kate', role: 'evaluator', password: 'kate123' }
+            ];
+
+            agents = [
+                { id: 1, name: 'John Smith', position: 'Dispatcher', email: 'john@company.com', agentName: 'JS001', addedBy: 'alina@rpmdispatch.com', dateAdded: '2026-05-15' },
+                { id: 2, name: 'Sarah Johnson', position: 'Account Manager', email: 'sarah@company.com', agentName: 'SJ002', addedBy: 'alina@rpmdispatch.com', dateAdded: '2026-05-18' }
+            ];
+
+            evaluations = [
+                { id: 1, agentId: 1, agentName: 'John Smith', evaluatorEmail: 'alina@rpmdispatch.com', date: '2026-05-20 10:30', totalScore: 85.5, categoryScores: {intro: 90, driver: 80, broker: 85, overall: 88, closure: 82, extras: 75}, ratings: {}, comments: 'Good performance' }
+            ];
+        }
+
+        // ============= AUTHENTICATION =============
+        function handleLogin(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (CONFIG.USE_MOCK_DATA) {
+                const user = users.find(u => u.email === email && u.password === password);
+                if (user) {
+                    currentUser = user;
+                    localStorage.setItem('currentUser', JSON.stringify(user));
+                    showMainApp();
+                } else {
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            } else {
+                // Real Google Sheets authentication
+                callGoogleSheets('login', { email, password })
+                    .then(result => {
+                        if (result.success) {
+                            currentUser = result.user;
+                            localStorage.setItem('currentUser', JSON.stringify(result.user));
+                            showMainApp();
+                        } else {
+                            document.getElementById('loginError').style.display = 'block';
+                        }
+                    });
+            }
+        }
+
+        function handleLogout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainApp').style.display = 'none';
+        }
+
+        function checkSession() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                showMainApp();
+            }
+        }
+
+        function showMainApp() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'block';
+            document.getElementById('userBadge').textContent = currentUser.name;
+            
+            loadDashboard();
+            loadAgents();
+        }
+
+        // ============= NAVIGATION =============
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(btn => btn.classList.remove('active'));
+            
+            document.getElementById(tabName + 'Tab').classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tabName === 'dashboard') loadDashboard();
+            if (tabName === 'agents') loadAgents();
+            if (tabName === 'history') loadHistory();
+        }
+
+        // ============= DASHBOARD =============
+        function loadDashboard() {
+            const userAgents = agents.filter(a => a.addedBy === currentUser.email);
+            const userEvals = evaluations.filter(e => e.evaluatorEmail === currentUser.email);
+            
+            document.getElementById('totalAgents').textContent = userAgents.length;
+            document.getElementById('totalEvaluations').textContent = userEvals.length;
+            
+            if (userEvals.length > 0) {
+                const avgScore = userEvals.reduce((sum, e) => sum + e.totalScore, 0) / userEvals.length;
+                document.getElementById('averageScore').textContent = avgScore.toFixed(1) + '%';
+            }
+            
+            const thisMonth = new Date().getMonth();
+            const thisMonthEvals = userEvals.filter(e => new Date(e.date).getMonth() === thisMonth);
+            document.getElementById('thisMonthEvals').textContent = thisMonthEvals.length;
+        }
+
+        // ============= AGENTS MANAGEMENT =============
+        function loadAgents() {
+            const userAgents = agents.filter(a => a.addedBy === currentUser.email);
+            const tbody = document.getElementById('agentsTableBody');
+            
+            if (userAgents.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #6c757d;">No agents added yet</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = userAgents.map(agent => `
+                <tr>
+                    <td>${agent.name}</td>
+                    <td>${agent.position}</td>
+                    <td>${agent.email}</td>
+                    <td>${agent.agentName || '-'}</td>
+                    <td>${agent.dateAdded}</td>
+                    <td><button class="btn-select" onclick="selectAgent(${agent.id})">Select</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function showAddAgentModal() {
+            document.getElementById('addAgentModal').classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function saveNewAgent() {
+            const name = document.getElementById('newAgentName').value.trim();
+            const position = document.getElementById('newAgentPosition').value.trim();
+            const email = document.getElementById('newAgentEmail').value.trim();
+            const agentName = document.getElementById('newAgentAgentName').value.trim();
+            
+            if (!name || !position) {
+                alert('Please fill in required fields');
+                return;
+            }
+            
+            const newAgent = {
+                id: agents.length + 1,
+                name,
+                position,
+                email,
+                agentName,
+                addedBy: currentUser.email,
+                dateAdded: new Date().toISOString().split('T')[0]
+            };
+            
+            agents.push(newAgent);
+            closeModal('addAgentModal');
+            loadAgents();
+            
+            // Clear form
+            document.getElementById('newAgentName').value = '';
+            document.getElementById('newAgentPosition').value = '';
+            document.getElementById('newAgentEmail').value = '';
+            document.getElementById('newAgentAgentName').value = '';
+        }
+
+        function importFromWorkload() {
+            if (CONFIG.USE_MOCK_DATA) {
+                alert('Import from Work load: This will import all positions (Dispatcher, Account Manager, etc.) from your Work load sheet');
+                // Mock import
+                const mockImported = [
+                    { id: agents.length + 1, name: 'Mike Davis', position: 'Dispatcher', email: 'mike@company.com', agentName: 'MD003', addedBy: currentUser.email, dateAdded: new Date().toISOString().split('T')[0] },
+                    { id: agents.length + 2, name: 'Lisa Brown', position: 'Account Manager', email: 'lisa@company.com', agentName: 'LB004', addedBy: currentUser.email, dateAdded: new Date().toISOString().split('T')[0] }
+                ];
+                agents.push(...mockImported);
+                loadAgents();
+                alert('Imported 2 agents from Work load');
+            } else {
+                callGoogleSheets('importFromWorkload', { userEmail: currentUser.email })
+                    .then(result => {
+                        if (result.success) {
+                            loadAgents();
+                            alert('Imported ' + result.count + ' agents');
+                        }
+                    });
+            }
+        }
+
+        function selectAgent(agentId) {
+            currentAgent = agents.find(a => a.id === agentId);
+            
+            // Show evaluation form
+            document.getElementById('noAgentWarning').style.display = 'none';
+            document.getElementById('evaluationHeader').style.display = 'block';
+            document.getElementById('previousResultsSection').style.display = 'block';
+            document.getElementById('evaluationForm').style.display = 'block';
+            
+            // Update header
+            document.getElementById('selectedAgentName').textContent = currentAgent.name;
+            document.getElementById('selectedAgentInfo').textContent = `${currentAgent.position} • ${currentAgent.email || 'No email'}`;
+            
+            // Load previous evaluations for this agent
+            loadPreviousEvaluations();
+            
+            // Switch to evaluate tab
+            showTab('evaluate');
+            document.querySelectorAll('.nav-tab')[2].classList.add('active');
+            
+            // Reset form
+            resetEvaluation();
+        }
+
+        // ============= PREVIOUS EVALUATIONS =============
+        function loadPreviousEvaluations() {
+            const agentEvals = evaluations.filter(e => e.agentId === currentAgent.id);
+            const select = document.getElementById('previousEvalSelect');
+            
+            select.innerHTML = '<option value="">Select previous evaluation...</option>';
+            
+            agentEvals.forEach(eval => {
+                const option = document.createElement('option');
+                option.value = eval.id;
+                option.textContent = `${eval.date} - Score: ${eval.totalScore.toFixed(1)}%`;
+                select.appendChild(option);
+            });
+        }
+
+        function loadPreviousScore() {
+            const evalId = document.getElementById('previousEvalSelect').value;
+            if (!evalId) {
+                document.getElementById('previousScoreDisplay').style.display = 'none';
+                previousScore = null;
+                return;
+            }
+            
+            const eval = evaluations.find(e => e.id === parseInt(evalId));
+            if (eval) {
+                previousScore = eval.totalScore;
+                updatePreviousScoreDisplay();
+            }
+        }
+
+        function setManualPreviousScore() {
+            const score = parseFloat(document.getElementById('manualPreviousScore').value);
+            if (score >= 0 && score <= 100) {
+                previousScore = score;
+                document.getElementById('previousEvalSelect').value = '';
+                updatePreviousScoreDisplay();
+            }
+        }
+
+        function updatePreviousScoreDisplay() {
+            document.getElementById('previousScoreDisplay').style.display = 'block';
+            document.getElementById('previousScoreValue').textContent = previousScore.toFixed(1) + '%';
+            updateScoreComparison();
+        }
+
+        function updateScoreComparison() {
+            if (!previousScore) return;
+            
+            const currentScore = calculateTotalScoreValue();
+            document.getElementById('currentScoreValue').textContent = currentScore.toFixed(1) + '%';
+            
+            const delta = currentScore - previousScore;
+            const deltaEl = document.getElementById('scoreDelta');
+            
+            if (delta > 0) {
+                deltaEl.textContent = `↑ +${delta.toFixed(1)}%`;
+                deltaEl.className = 'score-delta positive';
+            } else if (delta < 0) {
+                deltaEl.textContent = `↓ ${delta.toFixed(1)}%`;
+                deltaEl.className = 'score-delta negative';
+            } else {
+                deltaEl.textContent = '→ 0%';
+                deltaEl.className = 'score-delta';
+            }
+        }
+
+        // ============= RATING SYSTEM =============
+        function setRating(criterionId, value) {
+            // Update ratings object
+            if (value === 'NA') {
+                ratings[criterionId] = 'NA';
+            } else {
+                ratings[criterionId] = parseInt(value);
+            }
+            
+            // Update UI
+            const buttons = event.target.parentElement.querySelectorAll('.rating-btn');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            event.target.classList.add('selected');
+            
+            // Calculate scores
+            calculateCriterionScore(criterionId);
+            calculateCategoryScores();
+            calculateTotalScore();
+            
+            if (previousScore) {
+                updateScoreComparison();
+            }
+        }
+
+        function calculateCriterionScore(criterionId) {
+            const rating = ratings[criterionId];
+            const weight = weights[criterionId];
+            
+            if (rating === 'NA') {
+                document.getElementById('score_' + criterionId).textContent = 'N/A';
+            } else if (rating) {
+                const score = (rating / 5) * 100;
+                document.getElementById('score_' + criterionId).textContent = score.toFixed(1) + '%';
+            }
+        }
+
+        function calculateCategoryScores() {
+            for (const [categoryKey, category] of Object.entries(categories)) {
+                let totalWeighted = 0;
+                let totalWeight = 0;
+                
+                category.criteria.forEach(criterionId => {
+                    const rating = ratings[criterionId];
+                    const weight = weights[criterionId];
+                    
+                    if (rating && rating !== 'NA') {
+                        totalWeighted += (rating / 5) * weight;
+                        totalWeight += weight;
+                    }
+                });
+                
+                const categoryScore = totalWeight > 0 ? (totalWeighted / totalWeight) * 100 : 0;
+                document.getElementById('categoryScore_' + categoryKey).textContent = categoryScore.toFixed(1) + '%';
+            }
+        }
+
+        function calculateTotalScore() {
+            const totalScore = calculateTotalScoreValue();
+            document.getElementById('totalScore').textContent = totalScore.toFixed(1) + '%';
+        }
+
+        function calculateTotalScoreValue() {
+            let grandTotal = 0;
+            let grandWeight = 0;
+            
+            for (const [categoryKey, category] of Object.entries(categories)) {
+                let categoryWeighted = 0;
+                let categoryWeight = 0;
+                
+                category.criteria.forEach(criterionId => {
+                    const rating = ratings[criterionId];
+                    const weight = weights[criterionId];
+                    
+                    if (rating && rating !== 'NA') {
+                        categoryWeighted += (rating / 5) * weight;
+                        categoryWeight += weight;
+                    }
+                });
+                
+                if (categoryWeight > 0) {
+                    grandTotal += categoryWeighted;
+                    grandWeight += categoryWeight;
+                }
+            }
+            
+            return grandWeight > 0 ? (grandTotal / grandWeight) * 100 : 0;
+        }
+
+        function resetEvaluation() {
+            ratings = {};
+            previousScore = null;
+            
+            document.querySelectorAll('.rating-btn').forEach(btn => btn.classList.remove('selected'));
+            document.querySelectorAll('[id^="score_"]').forEach(el => el.textContent = '0.0%');
+            document.querySelectorAll('[id^="categoryScore_"]').forEach(el => el.textContent = '0%');
+            document.getElementById('totalScore').textContent = '0.0%';
+            document.getElementById('evaluationComments').value = '';
+            document.getElementById('previousEvalSelect').value = '';
+            document.getElementById('manualPreviousScore').value = '';
+            document.getElementById('previousScoreDisplay').style.display = 'none';
+        }
+
+        // ============= SAVE EVALUATION =============
+        function saveEvaluation() {
+            if (!currentAgent) {
+                alert('Please select an agent first');
+                return;
+            }
+            
+            const totalScore = calculateTotalScoreValue();
+            const categoryScores = {};
+            
+            for (const [categoryKey, category] of Object.entries(categories)) {
+                let categoryWeighted = 0;
+                let categoryWeight = 0;
+                
+                category.criteria.forEach(criterionId => {
+                    const rating = ratings[criterionId];
+                    const weight = weights[criterionId];
+                    
+                    if (rating && rating !== 'NA') {
+                        categoryWeighted += (rating / 5) * weight;
+                        categoryWeight += weight;
+                    }
+                });
+                
+                categoryScores[categoryKey] = categoryWeight > 0 ? (categoryWeighted / categoryWeight) * 100 : 0;
+            }
+            
+            const evaluation = {
+                id: evaluations.length + 1,
+                agentId: currentAgent.id,
+                agentName: currentAgent.name,
+                evaluatorEmail: currentUser.email,
+                date: new Date().toISOString().replace('T', ' ').substring(0, 19),
+                totalScore,
+                categoryScores,
+                ratings: {...ratings},
+                comments: document.getElementById('evaluationComments').value,
+                previousScore: previousScore
+            };
+            
+            evaluations.push(evaluation);
+            alert('Evaluation saved successfully!');
+            
+            resetEvaluation();
+            loadHistory();
+        }
+
+        // ============= HISTORY =============
+        function loadHistory() {
+            const userEvals = evaluations.filter(e => e.evaluatorEmail === currentUser.email);
+            const container = document.getElementById('historyContent');
+            
+            if (userEvals.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #6c757d; padding: 40px;">No evaluations yet</p>';
+                return;
+            }
+            
+            container.innerHTML = userEvals.map(eval => `
+                <div class="category-section">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 style="color: #8B1538; margin-bottom: 5px;">${eval.agentName}</h3>
+                            <p style="color: #6c757d; font-size: 14px;">${eval.date}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="font-size: 32px; font-weight: bold; color: #8B1538;">${eval.totalScore.toFixed(1)}%</div>
+                            ${eval.previousScore ? `<div style="font-size: 14px; color: #6c757d;">Previous: ${eval.previousScore.toFixed(1)}%</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="margin-top: 15px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px;">
+                        ${Object.entries(eval.categoryScores).map(([cat, score]) => `
+                            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center;">
+                                <div style="font-size: 12px; color: #6c757d;">${categories[cat].name}</div>
+                                <div style="font-size: 18px; font-weight: bold; color: #495057;">${score.toFixed(1)}%</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${eval.comments ? `<div style="margin-top: 15px; padding: 15px; background: #fff3cd; border-radius: 8px;"><strong>Comments:</strong> ${eval.comments}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // ============= PDF GENERATION =============
+        function generatePDF() {
+            if (!currentAgent) {
+                alert('Please select an agent and complete evaluation first');
+                return;
+            }
+            
+            alert('PDF generation will be implemented with jsPDF library.\n\nThe report will include:\n- Agent details\n- Total score and comparison\n- Category breakdowns\n- Individual criterion scores\n- Comments\n\nAll in English.');
+        }
+
+        // ============= GOOGLE SHEETS API =============
+        async function callGoogleSheets(action, params) {
+            try {
+                const response = await fetch(CONFIG.GOOGLE_SHEETS_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action, ...params })
+                });
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                return { success: false, message: error.toString() };
+            }
+        }
+
+        // ============= INITIALIZATION =============
+        function init() {
+            if (CONFIG.USE_MOCK_DATA) {
+                initMockData();
+            }
+            checkSession();
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
